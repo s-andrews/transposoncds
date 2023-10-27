@@ -1,3 +1,8 @@
+# Test data
+testdata/Dfam_curatedonly.embl.gz
+testdata/dfamseq
+testdata/hg38.nrph.hits.gz
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
