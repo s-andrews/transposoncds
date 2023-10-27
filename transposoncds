@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+import argparse
+
+VERSION = "0.1"
+
+def main():
+    global options
+    options = getOptions()
+
+
+def getOptions():
+    parser = argparse.ArgumentParser(description="Find transposon coding sequences in genomic sequence")
+
+    parser.add_argument("--quiet", action="store_true", default=False, help="Suppress all progress messages")
+    parser.add_argument("--version", action="version", version=f"transposoncds v{VERSION} https://github.com/s-andrews/transposoncds")
+    parser.add_argument("dfam", type=str, help="The Dfam transposon file to parse")
+    parser.add_argument("hits",help="The Dfam hits file to parse")
+    parser.add_argument("genome",help="The chromosome sequence of the genome being searched")
+
+    options = parser.parse_args()
+
+    return options
+
+if __name__ == "__main__":
+    main()
