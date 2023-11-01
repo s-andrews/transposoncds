@@ -32,7 +32,7 @@ class Dfam:
 
         self.transposons = {}
 
-        with gzip.open(self.file) as infh:
+        with gzip.open(self.file,"rt", encoding="utf8") as infh:
             id = None
             length = None
             name = None
@@ -63,16 +63,22 @@ class Dfam:
                 elif line.startswith("NM"):
                     name = line[2:].strip()
 
-                elif line.startswith("KW"):
-                    sections = line[2:].strip().split("/")
-                    type = sections[0]
-                    subtype =sections[1]
+                elif line.startswith("CC        Type"):
+                    # They always have a type
+                    type = line.split(maxsplit=2)[-1].strip()
+
+                elif line.startswith("CC        SubType"):
+                    # Not all repeats have a subtype - some are blank
+                    subtype = line.strip()[18:].strip()
 
                 elif line.startswith("FT   CDS"):
                     sections = line[8:].strip().split("..")
                     cds_start = int(sections[0])
                     cds_end = int(sections[1])
                     cds_regions.append((cds_start,cds_end))
+
+    def get_transposons(self):
+        return self.transposons
 
 
 class Transposon:
@@ -83,3 +89,6 @@ class Transposon:
         self.type = type
         self.subtype = subtype
         self.cds_regions = cds_regions
+
+    def __repr__(self):
+        return f"{self.id} {self.length}bp {self.name} {self.type} {self.subtype}"
