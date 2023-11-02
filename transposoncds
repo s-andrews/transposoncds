@@ -1,19 +1,69 @@
 #!/usr/bin/env python
 import argparse
 from dfam.dfam import Dfam
+from dfam.coding_transposons import CodingTransposons
 
 VERSION = "0.1"
 
 def main():
     global options
     options = getOptions()
+    if not options.quiet:
+        print("Reading Dfam database")
+
     transposons = read_transposons(options.dfam)
+    cds_sequences = find_cds_sequences(transposons)
+
+def find_cds_sequences(transposons):
+    if not options.quiet:
+        print("Scanning for CDS region hits")
+
+    coding_transposons = CodingTransposons(transposons, options.hits)
+    coding_transposons.parseHits()
+
+
+    if not options.quiet:
+        print("Reading in reference genome sequences")
+
+    genome = read_genome()
+
+    cds_sequences = coding_transposons.extract_cds_sequences(genome)
+
     breakpoint()
 
 def read_transposons(file):
     dfam = Dfam(file)
     dfam.parseFile()
     return dfam.get_transposons()
+
+
+def read_genome():
+    genome = {}
+    last_chr = ""
+    with open(options.genome, "rt", encoding="utf8") as infh:
+        for line in infh:
+            if line.startswith(">"):
+                last_chr = line.strip().split()[1]
+                ### TESTING ONLY
+                if last_chr != "chr1":
+                    break
+                
+                genome[last_chr] = []
+
+                if not options.quiet:
+                    print("Reading "+last_chr)
+
+
+            else:
+                genome[last_chr].append(line.strip())
+
+
+    for chromosome,sequence in genome.items():
+        genome[chromosome] = "".join(sequence)
+
+
+    return genome
+
 
 def getOptions():
     parser = argparse.ArgumentParser(description="Find transposon coding sequences in genomic sequence")

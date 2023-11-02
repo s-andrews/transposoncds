@@ -57,7 +57,7 @@ class Dfam:
                     cds_regions = []
 
                     sections = line[5:].split("; ")
-                    id = sections[0]+sections[1][3:]
+                    id = sections[0]+"."+sections[1][3:]
                     length = int(sections[-1].split()[0])
 
                 elif line.startswith("NM"):
