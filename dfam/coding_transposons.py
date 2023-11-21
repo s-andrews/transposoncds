@@ -17,6 +17,9 @@ class CodingTransposons:
         # We'll save the hits by chromosome
         self.coding_transposons = {}
 
+        matches_to_coding_dfam = 0
+        match_to_cds = 0
+
         with gzip.open(self.hits, "rt", encoding="utf8") as infh:
             for line in infh:
                 if line.startswith("#"):
@@ -25,6 +28,8 @@ class CodingTransposons:
                 if not sections[1] in self.transposons:
                     # This isn't a transposon which we have annotated with a CDS
                     continue
+
+                matches_to_coding_dfam += 1
                 
                 # We need to find if this covers a CDS
 
@@ -37,6 +42,8 @@ class CodingTransposons:
                 # the region we found.
                 for cds in self.transposons[sections[1]].cds_regions:
                     if hit_start <= cds[0] and hit_end >= cds[1]:
+
+                        match_to_cds += 1
 
                         # We have a hit.  We now need to extract the genomic
                         # positions for the CDS region.
@@ -51,8 +58,8 @@ class CodingTransposons:
                         chromosome = sections[0]
 
                         ## TESTING ONLY
-                        if chromosome != "chr1":
-                            return()
+                        #if chromosome != "chr1":
+                        #    return()
 
 
                         strand = sections[8]
@@ -68,8 +75,10 @@ class CodingTransposons:
                             genome_cds_start = genome_start + start_offset
                             genome_cds_end = genome_end - end_offset
                         else:
-                            genome_cds_start = genome_start - end_offset
-                            genome_cds_end = genome_end + start_offset
+                            genome_cds_start = genome_start - start_offset
+                            genome_cds_end = genome_end + end_offset
+
+                        breakpoint()
 
                         coding_transposon = CodingTransposon(id=sections[1], chromosome=chromosome, cds_length=cds[1]-(cds[0]-1) ,strand=strand, genome_start=genome_start, genome_end=genome_end, genome_cds_start=genome_cds_start, genome_cds_end=genome_cds_end)
 
@@ -77,6 +86,13 @@ class CodingTransposons:
                             self.coding_transposons[chromosome] = []
 
                         self.coding_transposons[chromosome].append(coding_transposon)
+
+    def total_hits(self):
+        hits = 0
+        for chr in self.coding_transposons.keys():
+            hits += len(self.coding_transposons[chr])
+
+        return hits
 
     def extract_cds_sequences(self,genome):
         # Here we go through the putative hits we found before and see if we can
@@ -165,6 +181,17 @@ class ExtractedCDS:
         self.genome_orf_start = genome_orf_start
         self.genome_orf_end = genome_orf_end
         self.cds_sequence = cds_sequence
+
+    def __repr__(self):
+        # We will represent ourself as a fastq file with a bunch of stuff on the header line
+        # We need a unique id  this will be the ID_Chr_Start_End
+
+        unique="_".join([str(x) for x in [self.id, self.chromosome, self.genome_orf_start, self.genome_orf_end]])
+
+        record = f">{unique} id={self.id} type={self.type} subtype={self.subtype} chromosome={self.chromosome} strand={self.strand} repeat_cds_genome_start={self.repeat_cds_genome_start} repeat_cds_genome_end={self.repeat_cds_genome_end} genome_orf_start={self.genome_orf_start} genome_orf_end={self.genome_orf_end}\n{self.cds_sequence}"
+
+        return record
+
 
 class CodingTransposon:
 
