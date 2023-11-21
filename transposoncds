@@ -68,8 +68,8 @@ def read_genome():
             if line.startswith(">"):
                 last_chr = line.strip().split()[1]
                 ### TESTING ONLY
-                if last_chr != "chr1":
-                    break
+                #if last_chr != "chr1":
+                #    break
 
                 genome[last_chr] = []
 
