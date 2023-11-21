@@ -75,10 +75,8 @@ class CodingTransposons:
                             genome_cds_start = genome_start + start_offset
                             genome_cds_end = genome_end - end_offset
                         else:
-                            genome_cds_start = genome_start - start_offset
-                            genome_cds_end = genome_end + end_offset
-
-                        breakpoint()
+                            genome_cds_end = genome_start - start_offset
+                            genome_cds_start = genome_end + end_offset
 
                         coding_transposon = CodingTransposon(id=sections[1], chromosome=chromosome, cds_length=cds[1]-(cds[0]-1) ,strand=strand, genome_start=genome_start, genome_end=genome_end, genome_cds_start=genome_cds_start, genome_cds_end=genome_cds_end)
 
@@ -111,8 +109,10 @@ class CodingTransposons:
 
                 # We reverse complement if the hit is on the reverse strand
                 if hit.strand == "-":
-                    potential_orf = chr_sequence[hit.genome_cds_end-1:hit.genome_cds_start]
                     potential_orf = potential_orf.translate(revcomp_table)[::-1]
+
+                breakpoint()
+
 
                 # Now we find ORFs
                 orfs = []

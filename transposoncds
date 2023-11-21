@@ -12,7 +12,18 @@ def main():
         print("Reading Dfam database")
 
     transposons = read_transposons(options.dfam)
+
+    if not options.quiet:
+        print(f"Found {len(transposons)} coding transposons")
+
+
     cds_sequences = find_cds_sequences(transposons)
+
+    if not options.quiet:
+        print(f"Found {len(cds_sequences)} genomic transposon CDS sequences")
+
+    write_output(cds_sequences)
+
 
 def find_cds_sequences(transposons):
     if not options.quiet:
@@ -23,13 +34,25 @@ def find_cds_sequences(transposons):
 
 
     if not options.quiet:
+        print(f"Found {coding_transposons.total_hits()} putative CDS sequences")
+
+    if not options.quiet:
         print("Reading in reference genome sequences")
 
     genome = read_genome()
 
+    if not options.quiet:
+        print("Writing output to "+options.outfile)
+
     cds_sequences = coding_transposons.extract_cds_sequences(genome)
 
-    breakpoint()
+    return cds_sequences
+
+
+def write_output(cds_sequences):
+    with open(options.outfile, "wt", encoding="utf8") as out:
+        for cds_sequence in cds_sequences:
+            print(cds_sequence, file=out)
 
 def read_transposons(file):
     dfam = Dfam(file)
@@ -47,7 +70,7 @@ def read_genome():
                 ### TESTING ONLY
                 if last_chr != "chr1":
                     break
-                
+
                 genome[last_chr] = []
 
                 if not options.quiet:
@@ -73,6 +96,7 @@ def getOptions():
     parser.add_argument("dfam", type=str, help="The Dfam transposon file to parse")
     parser.add_argument("hits",help="The Dfam hits file to parse")
     parser.add_argument("genome",help="The chromosome sequence of the genome being searched")
+    parser.add_argument("outfile",help="The text file where the results will be written")
 
     options = parser.parse_args()
 
